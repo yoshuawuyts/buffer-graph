@@ -9,13 +9,13 @@ Resolve a dependency graph (DAG) of functions that create Buffers.
 var bufferGraph = require('buffer-graph')
 
 var graph = bufferGraph()
-graph.on('change', function (name, data) {
-  console.log(`${name} changed to ${data[name].hash}`)
+graph.on('change', function (nodeName, edgeName, state) {
+  console.log(`${nodeName}:${edgeName} changed to ${state[name].hash}`)
 })
 
 // Triggers when graph.start() is called
-graph.node('first', function (data, edge) {
-  console.log('initial data is', data.arguments)
+graph.node('first', function (state, edge) {
+  console.log('initial state is', state.arguments)
   edge('foo', Buffer.from('beep'))
   setTimeout(function () {
     edge('bar', Buffer.from('boop'))
@@ -23,10 +23,10 @@ graph.node('first', function (data, edge) {
 })
 
 // Triggers once first:foo and first:bar have been created. Retriggers if
-// either dependency changes, and the data has a different hash.
-graph.node('second', [ 'first:foo', 'first:bar' ], function (data, edge) {
-  console.log('first:foo', data.first.foo)
-  console.log('first:bar', data.first.bar)
+// either dependency changes, and the state has a different hash.
+graph.node('second', [ 'first:foo', 'first:bar' ], function (state, edge) {
+  console.log('first:foo', state.first.foo)
+  console.log('first:bar', state.first.bar)
   edge('baz', Buffer.from('berp'))
 })
 
@@ -34,7 +34,7 @@ graph.start({ hi: 'kittens' })
 ```
 
 ## Events
-### `graph.on('change', name, data)`
+### `graph.on('change', name, state)`
 Emitted whenever an edge in the graph is updated.
 
 ## API
@@ -42,11 +42,11 @@ Emitted whenever an edge in the graph is updated.
 Create a new `buffer-graph` instance. Inherits from Node's
 `events.EventEmitter` module.
 
-### `graph.node(name, [dependencies], function (data, edge))`
+### `graph.node(name, [dependencies], fn(state, edge))`
 Create a new node in the buffer graph.
 
-### `graph.start([data])`
-Start the graph.
+### `graph.start([arguments])`
+Start the graph. Can be passed `arguments` which is set as `state.arguments`
 
 ## License
 [MIT](https://tldrlegal.com/license/mit-license)

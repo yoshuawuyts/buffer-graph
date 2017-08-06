@@ -1,5 +1,6 @@
 var Emitter = require('events').EventEmitter
 var assert = require('assert')
+var crypto = require('crypto')
 
 module.exports = BufferGraph
 
@@ -27,6 +28,7 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
 
   var self = this
   this.handlers[nodeName] = handler
+  this.data[nodeName] = {}
 
   if (dependencies.length === 0) {
     this.entries.push(nodeName)
@@ -46,14 +48,33 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
 
 BufferGraph.prototype.start = function (data) {
   assert.ok(this.entries.length, 'buffer-graph.start: no entries detected, cannot start the graph')
-  this.data.arguments = data
+
   var self = this
+  this.data.arguments = data
+
   this.entries.forEach(function (nodeName) {
-    var handler = self.handlers[nodeName]
-    handler(self.data, function createEdge (edgeName, data) {
+    var node = self.handlers[nodeName]
+    node(self.data, createEdge(nodeName))
+  })
+  function createEdge (nodeName) {
+    return function (edgeName, data) {
       assert.equal(typeof edgeName, 'string', 'buffer-graph.node.createEdge: edgeName should be type string')
       assert.equal(Buffer.isBuffer(data), true, 'buffer-graph.node.createEdge: data should be a buffer')
-      console.log('called') // TODO: continue from here - make it so second is triggered
-    })
-  })
+
+      self.data[nodeName][edgeName] = {
+        buffer: data,
+        hash: hash(data)
+      }
+
+      var nodeNames = self.edges[nodeName][edgeName]
+      nodeNames.forEach(function (nodeName) {
+        var node = self.handlers[nodeName]
+        node(self.data, createEdge(nodeName))
+      })
+    }
+  }
+}
+
+function hash (buf) {
+  return crypto.createHash('sha256').update(buf).digest('hex')
 }
