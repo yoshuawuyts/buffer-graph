@@ -7,12 +7,12 @@ module.exports = BufferGraph
 function BufferGraph () {
   if (!(this instanceof BufferGraph)) return new BufferGraph()
   Emitter.call(this)
-  this.entries = []
-  this.handlers = {}
-  this.edges = {}
-  this.data = {
-    metadata: {}
-  }
+
+  this.roots = []
+  this.nodes = {}
+  this.data = {}
+
+  this.data.metadata = {}
 }
 BufferGraph.prototype = Object.create(Emitter.prototype)
 
@@ -27,19 +27,23 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
   assert.equal(typeof handler, 'function', 'buffer-graph.node: handler should be type function')
 
   var self = this
-  this.handlers[nodeName] = handler
+  this.nodes[nodeName] = {
+    dependencies: dependencies,
+    handler: handler,
+    triggered: {},
+    edges: {}
+  }
   this.data[nodeName] = {}
 
   if (dependencies.length === 0) {
-    this.entries.push(nodeName)
+    this.roots.push(nodeName)
   } else {
     dependencies.forEach(function (dependency) {
       var arr = dependency.split(':')
       var a = arr[0]
       var b = arr[1]
-      if (!self.edges[a]) self.edges[a] = {}
-      if (!self.edges[a][b]) self.edges[a][b] = []
-      self.edges[a][b].push(nodeName)
+      if (!self.nodes[a].edges[b]) self.nodes[a].edges[b] = []
+      self.nodes[a].edges[b].push(nodeName)
     })
   }
 
@@ -47,34 +51,43 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
 }
 
 BufferGraph.prototype.start = function (data) {
-  assert.ok(this.entries.length, 'buffer-graph.start: no entries detected, cannot start the graph')
+  assert.ok(this.roots.length, 'buffer-graph.start: no roots detected, cannot start the graph')
 
   var self = this
   this.data.arguments = data
 
-  this.entries.forEach(function (nodeName) {
-    var node = self.handlers[nodeName]
-    node(self.data, createEdge(nodeName))
+  this.roots.forEach(function (nodeName) {
+    var node = self.nodes[nodeName]
+    node.handler(self.data, createEdge(nodeName))
   })
+
   function createEdge (nodeName) {
     return function (edgeName, data) {
       assert.equal(typeof edgeName, 'string', 'buffer-graph.node.createEdge: edgeName should be type string')
       assert.equal(Buffer.isBuffer(data), true, 'buffer-graph.node.createEdge: data should be a buffer')
 
-      self.data[nodeName][edgeName] = {
+      var node = self.data[nodeName]
+      var edge = node[edgeName]
+      var hash = sha256(data)
+
+      if (edge && hash === edge.hash) return // hashes were the same
+
+      node[edgeName] = {
         buffer: data,
-        hash: hash(data)
+        hash: hash
       }
 
-      var nodeNames = self.edges[nodeName][edgeName]
+      var nodeNames = self.nodes[nodeName].edges[edgeName]
       nodeNames.forEach(function (nodeName) {
-        var node = self.handlers[nodeName]
-        node(self.data, createEdge(nodeName))
+        var node = self.nodes[nodeName]
+        var handler = node.handler
+        // TODO: validate all prior constraints have been resolved before triggering
+        handler(self.data, createEdge(nodeName))
       })
     }
   }
 }
 
-function hash (buf) {
+function sha256 (buf) {
   return crypto.createHash('sha256').update(buf).digest('hex')
 }
