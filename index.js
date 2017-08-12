@@ -78,7 +78,7 @@ BufferGraph.prototype.start = function (data) {
         hash: hash
       }
 
-      var nodeNames = node.edges[edgeName]
+      var nodeNames = node.edges[edgeName] || []
       node.triggered[edgeName] = true
 
       nodeNames.forEach(function (nodeName) {
@@ -93,6 +93,8 @@ BufferGraph.prototype.start = function (data) {
         })
         if (ok) handler(self.data, createEdge(nodeName))
       })
+
+      self.emit('change', nodeName, edgeName, self.data)
     }
   }
 }

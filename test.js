@@ -72,20 +72,20 @@ tape('should resolve a graph with 2 dependencies', function (assert) {
   graph.start()
 })
 
-// tape('emit events on change', function (assert) {
-//   assert.plan(3)
+tape('emit events on change', function (assert) {
+  assert.plan(3)
 
-//   var graph = bufferGraph()
-//   graph.on('change', function (nodeName, edgeName, data) {
-//     assert.equal(nodeName, 'first', 'nodeName was ok')
-//     assert.equal(edgeName, 'first', 'edgeName was ok')
-//     assert.ok(data[nodeName][edgeName])
-//   })
-//   graph.node('first', function (data, edge) {
-//     edge('foo', Buffer.from('beep'))
-//   })
-//   graph.start()
-// })
+  var graph = bufferGraph()
+  graph.on('change', function (nodeName, edgeName, data) {
+    assert.equal(nodeName, 'first', 'nodeName was ok')
+    assert.equal(edgeName, 'foo', 'edgeName was ok')
+    assert.ok(data[nodeName][edgeName])
+  })
+  graph.node('first', function (data, edge) {
+    edge('foo', Buffer.from('beep'))
+  })
+  graph.start()
+})
 
 // tape('retrigger an event on change', function (assert) {
 //   assert.plan(4)
