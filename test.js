@@ -87,60 +87,61 @@ tape('emit events on change', function (assert) {
   graph.start()
 })
 
-// tape('retrigger an event on change', function (assert) {
-//   assert.plan(4)
-//   var called = false
-//   var i = 0
+tape('retrigger an event on change', function (assert) {
+  assert.plan(4)
+  var called = false
+  var i = 0
 
-//   var graph = bufferGraph()
-//   graph.node('first', function (data, edge) {
-//     assert.equal(i, 0, 'i = 0')
-//     i++
-//     edge('foo', Buffer.from('beep'))
-//     setTimeout(function () {
-//       assert.pass('retriggering')
-//       edge('foo', Buffer.from('boop'))
-//     }, 100)
-//   })
+  var graph = bufferGraph()
+  graph.node('first', function (data, edge) {
+    assert.equal(i, 0, 'i = 0')
+    i++
+    edge('foo', Buffer.from('beep'))
+    setTimeout(function () {
+      assert.pass('retriggering')
+      edge('foo', Buffer.from('boop'))
+    }, 100)
+  })
 
-//   graph.node('second', [ 'first:foo' ], function (data, edge) {
-//     if (!called) {
-//       assert.equal(i, 1, 'i = 1')
-//     } else {
-//       assert.equal(i, 2, 'i = 2')
-//     }
-//     called = true
-//     i++
-//   })
+  graph.node('second', [ 'first:foo' ], function (data, edge) {
+    if (!called) {
+      assert.equal(i, 1, 'i = 1')
+    } else {
+      assert.equal(i, 2, 'i = 2')
+    }
+    called = true
+    i++
+  })
 
-//   graph.start()
-// })
+  graph.start()
+})
 
-// tape('should not retrigger an event on change if data is same', function (assert) {
-//   assert.plan(3)
-//   var called = false
-//   var i = 0
+tape('should not retrigger an event on change if data is same', function (assert) {
+  assert.plan(3)
+  var called = false
+  var i = 0
 
-//   var graph = bufferGraph()
-//   graph.node('first', function (data, edge) {
-//     assert.equal(i, 0, 'i = 0')
-//     i++
-//     edge('foo', Buffer.from('beep'))
-//     setTimeout(function () {
-//       assert.pass('retriggering')
-//       edge('foo', Buffer.from('beep'))
-//     }, 100)
-//   })
+  var graph = bufferGraph()
+  graph.node('first', function (data, edge) {
+    assert.equal(i, 0, 'i = 0')
+    i++
+    edge('foo', Buffer.from('beep'))
+    setTimeout(function () {
+      assert.pass('retriggering')
+      edge('foo', Buffer.from('beep'))
+    }, 100)
+  })
 
-//   graph.node('second', [ 'first:foo' ], function (data, edge) {
-//     if (!called) {
-//       assert.equal(i, 1, 'i = 1')
-//     } else {
-//       assert.fail('should not have been called')
-//     }
-//     called = true
-//     i++
-//   })
+  graph.node('second', [ 'first:foo' ], function (data, edge) {
+    if (!called) {
+      assert.equal(i, 1, 'i = 1')
+    } else {
+      assert.fail('should not have been called')
+    }
 
-//   graph.start()
-// })
+    called = true
+    i++
+  })
+
+  graph.start()
+})

@@ -68,10 +68,11 @@ BufferGraph.prototype.start = function (data) {
 
       var dataNode = self.data[nodeName]
       var node = self.nodes[nodeName]
-      var edge = node[edgeName]
       var hash = sha256(data)
 
-      if (edge && hash === edge.hash) return // hashes were the same
+      // detect if hashes were the same
+      var edge = dataNode[edgeName]
+      if (edge && hash === edge.hash) return
 
       dataNode[edgeName] = {
         buffer: data,
