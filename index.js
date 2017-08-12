@@ -8,11 +8,11 @@ function BufferGraph () {
   if (!(this instanceof BufferGraph)) return new BufferGraph()
   Emitter.call(this)
 
-  this.roots = []
-  this.nodes = {}
-  this.data = {}
+  this.roots = []  // nodes that should be resolved when .start() is called
+  this.nodes = {}  // references to all nodes, keeps state except "data"
+  this.data = {}   // data that is passed into each node
 
-  this.data.metadata = {}
+  this.data.metadata = {}  // non-buffer metadata, does not cause triggers
 }
 BufferGraph.prototype = Object.create(Emitter.prototype)
 
@@ -66,23 +66,32 @@ BufferGraph.prototype.start = function (data) {
       assert.equal(typeof edgeName, 'string', 'buffer-graph.node.createEdge: edgeName should be type string')
       assert.equal(Buffer.isBuffer(data), true, 'buffer-graph.node.createEdge: data should be a buffer')
 
-      var node = self.data[nodeName]
+      var dataNode = self.data[nodeName]
+      var node = self.nodes[nodeName]
       var edge = node[edgeName]
       var hash = sha256(data)
 
       if (edge && hash === edge.hash) return // hashes were the same
 
-      node[edgeName] = {
+      dataNode[edgeName] = {
         buffer: data,
         hash: hash
       }
 
-      var nodeNames = self.nodes[nodeName].edges[edgeName]
+      var nodeNames = node.edges[edgeName]
+      node.triggered[edgeName] = true
+
       nodeNames.forEach(function (nodeName) {
         var node = self.nodes[nodeName]
         var handler = node.handler
-        // TODO: validate all prior constraints have been resolved before triggering
-        handler(self.data, createEdge(nodeName))
+        var ok = node.dependencies.every(function (dep) {
+          var split = dep.split(':')
+          var a = split[0]
+          var b = split[1]
+          var node = self.nodes[a]
+          return node.triggered[b] === true
+        })
+        if (ok) handler(self.data, createEdge(nodeName))
       })
     }
   }

@@ -43,7 +43,7 @@ tape('should resolve a graph', function (assert) {
 })
 
 tape('should resolve a graph with 2 dependencies', function (assert) {
-  assert.plan(5)
+  assert.plan(8)
   var i = 0
 
   var graph = bufferGraph()
