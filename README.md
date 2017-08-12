@@ -2,7 +2,10 @@
 [![npm version][2]][3] [![build status][4]][5]
 [![downloads][8]][9] [![js-standard-style][10]][11]
 
-Resolve a dependency graph (DAG) of functions that create Buffers.
+Resolve a dependency graph of buffers.
+
+Useful to manage multiple functions that rely on each other, and can recreate
+assets on the fly through means such as observing filesystem events.
 
 ## Usage
 ```js
