@@ -99,7 +99,7 @@ BufferGraph.prototype.start = function (data) {
           assert.ok(node, 'buffer-graph ' + dependentName + ' relies on non-existant dependency ' + dep)
           return node.triggered[b] === true
         })
-        if (ok) handler(self.data, createEdge(dependentName))
+        if (ok) handler.call(self, self.data, createEdge(dependentName))
       })
 
       self.emit('change', nodeName, edgeName, self.data)
