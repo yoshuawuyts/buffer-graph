@@ -31,7 +31,7 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
   var node = this.nodes[nodeName]
   if (!node) node = this.nodes[nodeName] = createNode()
   node.dependencies = dependencies
-  node.handler = handler
+  node.handler = handler.bind(this)
 
   this.data[nodeName] = {}
 
@@ -63,7 +63,6 @@ BufferGraph.prototype.start = function (data) {
 
   this.roots.forEach(function (nodeName) {
     var node = self.nodes[nodeName]
-    console.log(nodeName)
     node.handler(self.data, createEdge(nodeName))
   })
 
@@ -99,7 +98,7 @@ BufferGraph.prototype.start = function (data) {
           assert.ok(node, 'buffer-graph ' + dependentName + ' relies on non-existant dependency ' + dep)
           return node.triggered[b] === true
         })
-        if (ok) handler.call(self, self.data, createEdge(dependentName))
+        if (ok) handler(self.data, createEdge(dependentName))
       })
 
       self.emit('change', nodeName, edgeName, self.data)
