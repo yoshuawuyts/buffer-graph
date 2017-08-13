@@ -27,12 +27,12 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
   assert.equal(typeof handler, 'function', 'buffer-graph.node: handler should be type function')
 
   var self = this
-  this.nodes[nodeName] = {
-    dependencies: dependencies,
-    handler: handler,
-    triggered: {},
-    edges: {}
-  }
+
+  var node = this.nodes[nodeName]
+  if (!node) node = this.nodes[nodeName] = createNode()
+  node.dependencies = dependencies
+  node.handler = handler
+
   this.data[nodeName] = {}
 
   if (dependencies.length === 0) {
@@ -42,8 +42,13 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
       var arr = dependency.split(':')
       var a = arr[0]
       var b = arr[1]
-      if (!self.nodes[a].edges[b]) self.nodes[a].edges[b] = []
-      self.nodes[a].edges[b].push(nodeName)
+      var node = self.nodes[a]
+      if (!node) {
+        node = createNode()
+        self.nodes[a] = node
+      }
+      if (!node.edges[b]) self.nodes[a].edges[b] = []
+      node.edges[b].push(nodeName)
     })
   }
 
@@ -58,6 +63,7 @@ BufferGraph.prototype.start = function (data) {
 
   this.roots.forEach(function (nodeName) {
     var node = self.nodes[nodeName]
+    console.log(nodeName)
     node.handler(self.data, createEdge(nodeName))
   })
 
@@ -79,20 +85,21 @@ BufferGraph.prototype.start = function (data) {
         hash: hash
       }
 
-      var nodeNames = node.edges[edgeName] || []
+      var dependentNames = node.edges[edgeName] || []
       node.triggered[edgeName] = true
 
-      nodeNames.forEach(function (nodeName) {
-        var node = self.nodes[nodeName]
+      dependentNames.forEach(function (dependentName) {
+        var node = self.nodes[dependentName]
         var handler = node.handler
         var ok = node.dependencies.every(function (dep) {
           var split = dep.split(':')
           var a = split[0]
           var b = split[1]
           var node = self.nodes[a]
+          assert.ok(node, 'buffer-graph ' + dependentName + ' relies on non-existant dependency ' + dep)
           return node.triggered[b] === true
         })
-        if (ok) handler(self.data, createEdge(nodeName))
+        if (ok) handler(self.data, createEdge(dependentName))
       })
 
       self.emit('change', nodeName, edgeName, self.data)
@@ -102,4 +109,11 @@ BufferGraph.prototype.start = function (data) {
 
 function sha256 (buf) {
   return crypto.createHash('sha256').update(buf).digest('hex')
+}
+
+function createNode () {
+  return {
+    triggered: {},
+    edges: {}
+  }
 }
