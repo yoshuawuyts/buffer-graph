@@ -51,7 +51,9 @@ tape('should resolve a graph with 2 dependencies', function (assert) {
     assert.equal(i, 0, 'i = 0')
     i++
     edge('foo', Buffer.from('beep'))
-    edge('bar', Buffer.from('boop'))
+    process.nextTick(function () {
+      edge('bar', Buffer.from('boop'))
+    })
   })
 
   graph.node('second', [ 'first:foo', 'first:bar' ], function (data, edge) {
