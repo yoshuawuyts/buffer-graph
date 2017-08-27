@@ -68,8 +68,8 @@ BufferGraph.prototype.start = function (data) {
 
   function createEdge (nodeName) {
     return function (edgeName, data) {
-      assert.equal(typeof edgeName, 'string', 'buffer-graph.node.createEdge: edgeName should be type string')
-      assert.equal(Buffer.isBuffer(data), true, 'buffer-graph.node.createEdge: data should be a buffer')
+      assert.equal(typeof edgeName, 'string', 'buffer-graph.node.createEdge: edgeName should be type string at ' + nodeName + ':' + edgeName)
+      assert.equal(Buffer.isBuffer(data), true, 'buffer-graph.node.createEdge: data should be a buffer at ' + nodeName + ':' + edgeName)
 
       var dataNode = self.data[nodeName]
       var node = self.nodes[nodeName]
