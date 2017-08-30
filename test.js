@@ -1,7 +1,7 @@
 var tape = require('tape')
 var spok = require('spok')
 
-var key = new Buffer('012345678012345678')
+var key = Buffer.from('012345678012345678')
 
 var bufferGraph = require('./')
 
