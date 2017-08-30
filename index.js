@@ -1,13 +1,16 @@
 var Emitter = require('events').EventEmitter
+var siphash24 = require('siphash24')
 var assert = require('assert')
-var crypto = require('crypto')
 
 module.exports = BufferGraph
 
-function BufferGraph () {
-  if (!(this instanceof BufferGraph)) return new BufferGraph()
+function BufferGraph (key) {
+  if (!(this instanceof BufferGraph)) return new BufferGraph(key)
   Emitter.call(this)
 
+  assert.ok(key, Buffer.isBuffer(key), 'buffer-graph: key should be a buffer')
+
+  this.key = key
   this.roots = []  // nodes that should be resolved when .start() is called
   this.nodes = {}  // references to all nodes, keeps state except "data"
   this.data = {}   // data that is passed into each node
@@ -61,10 +64,15 @@ BufferGraph.prototype.start = function (data) {
   var self = this
   this.data.arguments = data
 
-  this.roots.forEach(function (nodeName) {
-    var node = self.nodes[nodeName]
-    node.handler(self.data, createEdge(nodeName))
-  })
+  if (!siphash24.WASM_SUPPORTED || siphash24.WASM_LOADED) init()
+  else siphash24.ready(init)
+
+  function init () {
+    self.roots.forEach(function (nodeName) {
+      var node = self.nodes[nodeName]
+      node.handler(self.data, createEdge(nodeName))
+    })
+  }
 
   function createEdge (nodeName) {
     return function (edgeName, data) {
@@ -73,7 +81,7 @@ BufferGraph.prototype.start = function (data) {
 
       var dataNode = self.data[nodeName]
       var node = self.nodes[nodeName]
-      var hash = sha256(data)
+      var hash = Buffer.from(siphash24(data, self.key)).toString('hex')
 
       // detect if hashes were the same
       var edge = dataNode[edgeName]
@@ -104,10 +112,6 @@ BufferGraph.prototype.start = function (data) {
       self.emit('change', nodeName, edgeName, self.data)
     }
   }
-}
-
-function sha256 (buf) {
-  return crypto.createHash('sha256').update(buf).digest('hex')
 }
 
 function createNode () {

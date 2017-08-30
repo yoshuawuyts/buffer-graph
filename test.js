@@ -1,12 +1,14 @@
 var tape = require('tape')
 var spok = require('spok')
 
+var key = new Buffer('012345678012345678')
+
 var bufferGraph = require('./')
 
 tape('should provide initial data', function (assert) {
   assert.plan(2)
 
-  var graph = bufferGraph()
+  var graph = bufferGraph(key)
   graph.node('first', function (data, edge) {
     spok(assert, data, {
       arguments: {
@@ -21,7 +23,7 @@ tape('should resolve a graph', function (assert) {
   assert.plan(5)
   var i = 0
 
-  var graph = bufferGraph()
+  var graph = bufferGraph(key)
   graph.node('first', function (data, edge) {
     assert.equal(i, 0, 'i = 0')
     i++
@@ -46,7 +48,7 @@ tape('should resolve a graph with 2 dependencies', function (assert) {
   assert.plan(8)
   var i = 0
 
-  var graph = bufferGraph()
+  var graph = bufferGraph(key)
   graph.node('first', function (data, edge) {
     assert.equal(i, 0, 'i = 0')
     i++
@@ -77,7 +79,7 @@ tape('should resolve a graph with 2 dependencies', function (assert) {
 tape('emit events on change', function (assert) {
   assert.plan(3)
 
-  var graph = bufferGraph()
+  var graph = bufferGraph(key)
   graph.on('change', function (nodeName, edgeName, data) {
     assert.equal(nodeName, 'first', 'nodeName was ok')
     assert.equal(edgeName, 'foo', 'edgeName was ok')
@@ -94,7 +96,7 @@ tape('retrigger an event on change', function (assert) {
   var called = false
   var i = 0
 
-  var graph = bufferGraph()
+  var graph = bufferGraph(key)
   graph.node('first', function (data, edge) {
     assert.equal(i, 0, 'i = 0')
     i++
@@ -123,7 +125,7 @@ tape('should not retrigger an event on change if data is same', function (assert
   var called = false
   var i = 0
 
-  var graph = bufferGraph()
+  var graph = bufferGraph(key)
   graph.node('first', function (data, edge) {
     assert.equal(i, 0, 'i = 0')
     i++

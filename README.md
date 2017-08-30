@@ -11,7 +11,9 @@ assets on the fly through means such as observing filesystem events.
 ```js
 var bufferGraph = require('buffer-graph')
 
-var graph = bufferGraph()
+var key = Buffer.from('my very cool graphing key')
+
+var graph = bufferGraph(key)
 graph.on('change', function (nodeName, edgeName, state) {
   console.log(`${nodeName}:${edgeName} changed to ${state[name].hash}`)
 })
