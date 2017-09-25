@@ -1,5 +1,5 @@
 var Emitter = require('events').EventEmitter
-var siphash24 = require('siphash24')
+var blake2b = require('blake2b')
 var assert = require('assert')
 
 module.exports = BufferGraph
@@ -64,8 +64,7 @@ BufferGraph.prototype.start = function (data) {
   var self = this
   this.data.arguments = data
 
-  if (!siphash24.WASM_SUPPORTED || siphash24.WASM_LOADED) init()
-  else siphash24.ready(init)
+  init()
 
   function init () {
     self.roots.forEach(function (nodeName) {
@@ -81,8 +80,8 @@ BufferGraph.prototype.start = function (data) {
 
       var dataNode = self.data[nodeName]
       var node = self.nodes[nodeName]
-      var hash = Buffer.from(siphash24(data, self.key)).toString('hex')
-
+      var hash = new Uint8Array(16)
+      hash = blake2b(hash.length, self.key).update(data).digest('hex').slice(16)
       // detect if hashes were the same
       var edge = dataNode[edgeName]
       if (edge && hash === edge.hash) return
