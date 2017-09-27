@@ -13,9 +13,9 @@ function BufferGraph (key) {
   this.key = key
   this.roots = []  // nodes that should be resolved when .start() is called
   this.nodes = {}  // references to all nodes, keeps state except "data"
-  this.data = {}   // data that is passed into each node
+  this.state = {}  // data that is passed into each node
 
-  this.data.metadata = {}  // non-buffer metadata, does not cause triggers
+  this.state.metadata = {}  // non-buffer metadata, does not cause triggers
 }
 BufferGraph.prototype = Object.create(Emitter.prototype)
 
@@ -36,7 +36,7 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
   node.dependencies = dependencies
   node.handler = handler.bind(this)
 
-  this.data[nodeName] = {}
+  this.state[nodeName] = {}
 
   if (dependencies.length === 0) {
     this.roots.push(nodeName)
@@ -62,7 +62,7 @@ BufferGraph.prototype.start = function (metadata) {
   assert.ok(this.roots.length, 'buffer-graph.start: no roots detected, cannot start the graph')
 
   var self = this
-  this.data.metadata = metadata
+  this.state.metadata = metadata
   this.metadata = metadata
 
   init()
@@ -70,7 +70,7 @@ BufferGraph.prototype.start = function (metadata) {
   function init () {
     self.roots.forEach(function (nodeName) {
       var node = self.nodes[nodeName]
-      node.handler(self.data, createEdge(nodeName))
+      node.handler(self.state, createEdge(nodeName))
     })
   }
 
@@ -79,7 +79,7 @@ BufferGraph.prototype.start = function (metadata) {
       assert.equal(typeof edgeName, 'string', 'buffer-graph.node.createEdge: edgeName should be type string at ' + nodeName + ':' + edgeName)
       assert.equal(Buffer.isBuffer(data), true, 'buffer-graph.node.createEdge: data should be a buffer at ' + nodeName + ':' + edgeName)
 
-      var dataNode = self.data[nodeName]
+      var dataNode = self.state[nodeName]
       var node = self.nodes[nodeName]
       var hash = new Uint8Array(16)
       hash = blake2b(hash.length, self.key).update(data).digest('hex').slice(16)
@@ -106,10 +106,10 @@ BufferGraph.prototype.start = function (metadata) {
           assert.ok(node, 'buffer-graph ' + dependentName + ' relies on non-existant dependency ' + dep)
           return node.triggered[b] === true
         })
-        if (ok) handler(self.data, createEdge(dependentName))
+        if (ok) handler(self.state, createEdge(dependentName))
       })
 
-      self.emit('change', nodeName, edgeName, self.data)
+      self.emit('change', nodeName, edgeName, self.state)
     }
   }
 }

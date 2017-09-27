@@ -20,7 +20,7 @@ graph.on('change', function (nodeName, edgeName, state) {
 
 // Triggers when graph.start() is called
 graph.node('first', function (state, edge) {
-  console.log('initial state is', state.arguments)
+  console.log('initial state is', state.metadata)
   edge('foo', Buffer.from('beep'))
   setTimeout(function () {
     edge('bar', Buffer.from('boop'))
@@ -50,8 +50,14 @@ Create a new `buffer-graph` instance. Inherits from Node's
 ### `graph.node(name, [dependencies], fn(state, edge))`
 Create a new node in the buffer graph.
 
-### `graph.start([arguments])`
-Start the graph. Can be passed `arguments` which is set as `state.arguments`
+### `graph.start([metadata])`
+Start the graph. Can be passed `metadata` which is set as `state.metadata`.
+
+### `graph.state`
+Read out the data from the graph.
+
+### `graph.metadata`
+Read out the metadata from the graph.
 
 ## License
 [MIT](https://tldrlegal.com/license/mit-license)
