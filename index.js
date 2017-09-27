@@ -58,11 +58,12 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
   return this
 }
 
-BufferGraph.prototype.start = function (data) {
+BufferGraph.prototype.start = function (metadata) {
   assert.ok(this.roots.length, 'buffer-graph.start: no roots detected, cannot start the graph')
 
   var self = this
-  this.data.arguments = data
+  this.data.metadata = metadata
+  this.metadata = metadata
 
   init()
 
