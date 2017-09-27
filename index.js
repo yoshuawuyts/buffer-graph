@@ -13,9 +13,10 @@ function BufferGraph (key) {
   this.key = key
   this.roots = []  // nodes that should be resolved when .start() is called
   this.nodes = {}  // references to all nodes, keeps state except "data"
-  this.data = {}   // data that is passed into each node
+  this.data = {}  // data that is passed into each node
 
-  this.data.metadata = {}  // non-buffer metadata, does not cause triggers
+  this.metadata = {}  // non-buffer metadata, does not cause triggers
+  this.data.metadata = this.metadata
 }
 BufferGraph.prototype = Object.create(Emitter.prototype)
 
@@ -58,11 +59,12 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
   return this
 }
 
-BufferGraph.prototype.start = function (data) {
+BufferGraph.prototype.start = function (metadata) {
   assert.ok(this.roots.length, 'buffer-graph.start: no roots detected, cannot start the graph')
 
   var self = this
-  this.data.arguments = data
+  this.data.metadata = metadata
+  this.metadata = metadata
 
   init()
 

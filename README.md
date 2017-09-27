@@ -14,13 +14,13 @@ var bufferGraph = require('buffer-graph')
 var key = Buffer.from('my very cool graphing key')
 
 var graph = bufferGraph(key)
-graph.on('change', function (nodeName, edgeName, state) {
-  console.log(`${nodeName}:${edgeName} changed to ${state[name].hash}`)
+graph.on('change', function (name, data) {
+  console.log(`${nodeName}:${edgeName} changed to ${data[name].hash}`)
 })
 
 // Triggers when graph.start() is called
-graph.node('first', function (state, edge) {
-  console.log('initial state is', state.arguments)
+graph.node('first', function (data, edge) {
+  console.log('initial data is', data.metadata)
   edge('foo', Buffer.from('beep'))
   setTimeout(function () {
     edge('bar', Buffer.from('boop'))
@@ -28,10 +28,10 @@ graph.node('first', function (state, edge) {
 })
 
 // Triggers once first:foo and first:bar have been created. Retriggers if
-// either dependency changes, and the state has a different hash.
-graph.node('second', [ 'first:foo', 'first:bar' ], function (state, edge) {
-  console.log('first:foo', state.first.foo)
-  console.log('first:bar', state.first.bar)
+// either dependency changes, and the data has a different hash.
+graph.node('second', [ 'first:foo', 'first:bar' ], function (data, edge) {
+  console.log('first:foo', data.first.foo)
+  console.log('first:bar', data.first.bar)
   edge('baz', Buffer.from('berp'))
 })
 
@@ -50,8 +50,14 @@ Create a new `buffer-graph` instance. Inherits from Node's
 ### `graph.node(name, [dependencies], fn(state, edge))`
 Create a new node in the buffer graph.
 
-### `graph.start([arguments])`
-Start the graph. Can be passed `arguments` which is set as `state.arguments`
+### `graph.start([metadata])`
+Start the graph. Can be passed `metadata` which is set as `state.metadata`.
+
+### `graph.data`
+Read out the data from the graph.
+
+### `graph.metadata`
+Read out the metadata from the graph.
 
 ## License
 [MIT](https://tldrlegal.com/license/mit-license)

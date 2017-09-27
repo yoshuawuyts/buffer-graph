@@ -11,7 +11,7 @@ tape('should provide initial data', function (assert) {
   var graph = bufferGraph(key)
   graph.node('first', function (data, edge) {
     spok(assert, data, {
-      arguments: {
+      metadata: {
         hi: 'kittens'
       }
     })
