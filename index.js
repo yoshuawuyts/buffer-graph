@@ -15,7 +15,8 @@ function BufferGraph (key) {
   this.nodes = {}  // references to all nodes, keeps state except "data"
   this.data = {}  // data that is passed into each node
 
-  this.data.metadata = {}  // non-buffer metadata, does not cause triggers
+  this.metadata = {}  // non-buffer metadata, does not cause triggers
+  this.data.metadata = this.metadata
 }
 BufferGraph.prototype = Object.create(Emitter.prototype)
 
