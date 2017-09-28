@@ -1,5 +1,5 @@
 var Emitter = require('events').EventEmitter
-var blake2b = require('blake2b')
+var blake = require('blakejs').blake2bHex
 var assert = require('assert')
 
 module.exports = BufferGraph
@@ -82,8 +82,7 @@ BufferGraph.prototype.start = function (metadata) {
 
       var dataNode = self.data[nodeName]
       var node = self.nodes[nodeName]
-      var hash = new Uint8Array(16)
-      hash = blake2b(hash.length, self.key).update(data).digest('hex').slice(16)
+      var hash = blake(data, self.key, 16).slice(16)
       // detect if hashes were the same
       var edge = dataNode[edgeName]
       if (edge && hash === edge.hash) return
