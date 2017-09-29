@@ -149,3 +149,39 @@ tape('should not retrigger an event on change if data is same', function (assert
 
   graph.start()
 })
+
+tape('should mark blockers on a node', function (assert) {
+  assert.plan(12)
+
+  var graph = bufferGraph(key)
+  graph.node('first', function (data, edge) {
+    setTimeout(function () {
+      edge('foo', Buffer.from('beep'))
+    })
+  })
+
+  graph.node('second', [ 'first:foo' ], function (data, edge) {
+    spok(assert, graph.nodes, {
+      first: {
+        pending: [],
+        dependencies: []
+      },
+      second: {
+        pending: [],
+        dependencies: ['first:foo']
+      }
+    })
+  })
+
+  graph.start()
+  spok(assert, graph.nodes, {
+    first: {
+      pending: [],
+      dependencies: []
+    },
+    second: {
+      pending: ['first:foo'],
+      dependencies: ['first:foo']
+    }
+  })
+})
