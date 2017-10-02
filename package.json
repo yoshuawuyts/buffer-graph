@@ -2,7 +2,7 @@
   "name": "buffer-graph",
   "description": "Resolve a dependency graph for buffer creation",
   "repository": "yoshuawuyts/buffer-graph",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "scripts": {
     "deps": "dependency-check . && dependency-check . --extra --no-dev",
     "start": "node .",
