@@ -13,7 +13,7 @@ function BufferGraph (key) {
   this.key = key
   this.roots = []  // nodes that should be resolved when .start() is called
   this.nodes = {}  // references to all nodes, keeps state except "data"
-  this.data = {}  // data that is passed into each node
+  this.data = {}   // data that is passed into each node
 
   this.metadata = {}  // non-buffer metadata, does not cause triggers
   this.data.metadata = this.metadata
@@ -35,6 +35,7 @@ BufferGraph.prototype.node = function (nodeName, dependencies, handler) {
   var node = this.nodes[nodeName]
   if (!node) node = this.nodes[nodeName] = createNode()
   node.dependencies = dependencies
+  node.pending = dependencies.slice() // copy array
   node.handler = handler.bind(this)
 
   this.data[nodeName] = {}
@@ -97,15 +98,9 @@ BufferGraph.prototype.start = function (metadata) {
 
       dependentNames.forEach(function (dependentName) {
         var node = self.nodes[dependentName]
+        removeFromArray(node.pending, nodeName + ':' + edgeName)
         var handler = node.handler
-        var ok = node.dependencies.every(function (dep) {
-          var split = dep.split(':')
-          var a = split[0]
-          var b = split[1]
-          var node = self.nodes[a]
-          assert.ok(node, 'buffer-graph ' + dependentName + ' relies on non-existant dependency ' + dep)
-          return node.triggered[b] === true
-        })
+        var ok = node.pending.length === 0
         if (ok) handler(self.data, createEdge(dependentName))
       })
 
@@ -119,4 +114,10 @@ function createNode () {
     triggered: {},
     edges: {}
   }
+}
+
+function removeFromArray (arr, str) {
+  var index = arr.indexOf(str)
+  if (index === -1) return
+  arr.splice(index, 1)
 }
