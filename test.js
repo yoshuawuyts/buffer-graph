@@ -35,7 +35,7 @@ tape('should resolve a graph', function (assert) {
       first: {
         foo: {
           buffer: spok.type('object'),
-          hash: spok.string
+          hash: spok.type('object')
         }
       }
     })
@@ -63,11 +63,11 @@ tape('should resolve a graph with 2 dependencies', function (assert) {
       first: {
         foo: {
           buffer: spok.type('object'),
-          hash: spok.string
+          hash: spok.type('object')
         },
         bar: {
           buffer: spok.type('object'),
-          hash: spok.string
+          hash: spok.type('object')
         }
       }
     })
