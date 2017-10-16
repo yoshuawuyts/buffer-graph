@@ -1,16 +1,13 @@
 var Emitter = require('events').EventEmitter
-var blake = require('blakejs').blake2bHex
 var assert = require('assert')
+var crypto = require('crypto')
 
 module.exports = BufferGraph
 
-function BufferGraph (key) {
-  if (!(this instanceof BufferGraph)) return new BufferGraph(key)
+function BufferGraph () {
+  if (!(this instanceof BufferGraph)) return new BufferGraph()
   Emitter.call(this)
 
-  assert.ok(key, Buffer.isBuffer(key), 'buffer-graph: key should be a buffer')
-
-  this.key = key
   this.roots = []  // nodes that should be resolved when .start() is called
   this.nodes = {}  // references to all nodes, keeps state except "data"
   this.data = {}   // data that is passed into each node
@@ -83,10 +80,10 @@ BufferGraph.prototype.start = function (metadata) {
 
       var dataNode = self.data[nodeName]
       var node = self.nodes[nodeName]
-      var hash = blake(data, self.key, 16).slice(16)
+      var hash = sha512(data)
       // detect if hashes were the same
       var edge = dataNode[edgeName]
-      if (edge && hash === edge.hash) return
+      if (edge && hash.equals(edge.hash)) return
 
       dataNode[edgeName] = {
         buffer: data,
@@ -107,6 +104,12 @@ BufferGraph.prototype.start = function (metadata) {
       self.emit('change', nodeName, edgeName, self.data)
     }
   }
+}
+
+function sha512 (buf) {
+  return crypto.createHash('sha512')
+    .update(buf)
+    .digest('buffer')
 }
 
 function createNode () {
