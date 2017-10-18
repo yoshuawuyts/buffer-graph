@@ -2,14 +2,13 @@
   "name": "buffer-graph",
   "description": "Resolve a dependency graph for buffer creation",
   "repository": "yoshuawuyts/buffer-graph",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "scripts": {
     "deps": "dependency-check . && dependency-check . --extra --no-dev",
     "start": "node .",
     "test": "standard && npm run deps && node test"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "dependency-check": "^2.9.1",
     "spok": "^0.8.1",
