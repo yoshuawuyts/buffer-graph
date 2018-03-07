@@ -74,9 +74,14 @@ BufferGraph.prototype.start = function (metadata) {
   }
 
   function createEdge (nodeName) {
-    return function (edgeName, data) {
+    return function (edgeName, data, metadata) {
       assert.equal(typeof edgeName, 'string', 'buffer-graph.node.createEdge: edgeName should be type string at ' + nodeName + ':' + edgeName)
       assert.equal(Buffer.isBuffer(data), true, 'buffer-graph.node.createEdge: data should be a buffer at ' + nodeName + ':' + edgeName)
+      assert(metadata == null || typeof metadata === 'object', 'buffer-graph.node.createEdge: metadata should be an object at ' + nodeName + ':' + edgeName)
+      if (metadata) {
+        assert.equal(metadata.buffer, undefined, 'buffer-graph.node.createEdge: metadata may not have a buffer property at ' + nodeName + ':' + edgeName)
+        assert.equal(metadata.hash, undefined, 'buffer-graph.node.createEdge: metadata may not have a hash property at ' + nodeName + ':' + edgeName)
+      }
 
       var dataNode = self.data[nodeName]
       var node = self.nodes[nodeName]
@@ -85,10 +90,10 @@ BufferGraph.prototype.start = function (metadata) {
       var edge = dataNode[edgeName]
       if (edge && hash.equals(edge.hash)) return
 
-      dataNode[edgeName] = {
+      dataNode[edgeName] = Object.assign({
         buffer: data,
         hash: hash
-      }
+      }, metadata)
 
       var dependentNames = node.edges[edgeName] || []
       node.triggered[edgeName] = true

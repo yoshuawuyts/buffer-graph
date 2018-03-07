@@ -185,3 +185,21 @@ tape('should mark blockers on a node', function (assert) {
     }
   })
 })
+
+tape('should attach metadata to edges', function (assert) {
+  assert.plan(3)
+
+  var graph = bufferGraph()
+  graph.node('first', function (data, edge) {
+    edge('foo', Buffer.from('beep'), {
+      mime: 'text/plain',
+      array: ['array']
+    })
+
+    assert.equal(graph.data.first.foo.buffer + '', 'beep')
+    assert.equal(graph.data.first.foo.mime, 'text/plain')
+    assert.deepEqual(graph.data.first.foo.array, ['array'])
+  })
+
+  graph.start()
+})
