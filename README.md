@@ -47,7 +47,7 @@ Emitted whenever an edge in the graph is updated.
 Create a new `buffer-graph` instance. Inherits from Node's
 `events.EventEmitter` module.
 
-### `graph.node(name, [dependencies], fn(state, edge))`
+### `graph.node(name, [dependencies], fn(state, edge, metadata))`
 Create a new node in the buffer graph.
 
 ### `graph.start([metadata])`

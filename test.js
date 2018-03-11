@@ -1,14 +1,12 @@
 var tape = require('tape')
 var spok = require('spok')
 
-var key = Buffer.from('012345678012345678')
-
 var bufferGraph = require('./')
 
 tape('should provide initial data', function (assert) {
   assert.plan(2)
 
-  var graph = bufferGraph(key)
+  var graph = bufferGraph()
   graph.node('first', function (data, edge) {
     spok(assert, data, {
       metadata: {
@@ -23,7 +21,7 @@ tape('should resolve a graph', function (assert) {
   assert.plan(5)
   var i = 0
 
-  var graph = bufferGraph(key)
+  var graph = bufferGraph()
   graph.node('first', function (data, edge) {
     assert.equal(i, 0, 'i = 0')
     i++
@@ -48,7 +46,7 @@ tape('should resolve a graph with 2 dependencies', function (assert) {
   assert.plan(8)
   var i = 0
 
-  var graph = bufferGraph(key)
+  var graph = bufferGraph()
   graph.node('first', function (data, edge) {
     assert.equal(i, 0, 'i = 0')
     i++
@@ -79,7 +77,7 @@ tape('should resolve a graph with 2 dependencies', function (assert) {
 tape('emit events on change', function (assert) {
   assert.plan(3)
 
-  var graph = bufferGraph(key)
+  var graph = bufferGraph()
   graph.on('change', function (nodeName, edgeName, data) {
     assert.equal(nodeName, 'first', 'nodeName was ok')
     assert.equal(edgeName, 'foo', 'edgeName was ok')
@@ -96,7 +94,7 @@ tape('retrigger an event on change', function (assert) {
   var called = false
   var i = 0
 
-  var graph = bufferGraph(key)
+  var graph = bufferGraph()
   graph.node('first', function (data, edge) {
     assert.equal(i, 0, 'i = 0')
     i++
@@ -125,7 +123,7 @@ tape('should not retrigger an event on change if data is same', function (assert
   var called = false
   var i = 0
 
-  var graph = bufferGraph(key)
+  var graph = bufferGraph()
   graph.node('first', function (data, edge) {
     assert.equal(i, 0, 'i = 0')
     i++
@@ -153,7 +151,7 @@ tape('should not retrigger an event on change if data is same', function (assert
 tape('should mark blockers on a node', function (assert) {
   assert.plan(12)
 
-  var graph = bufferGraph(key)
+  var graph = bufferGraph()
   graph.node('first', function (data, edge) {
     setTimeout(function () {
       edge('foo', Buffer.from('beep'))
@@ -184,4 +182,22 @@ tape('should mark blockers on a node', function (assert) {
       dependencies: ['first:foo']
     }
   })
+})
+
+tape('should attach metadata to edges', function (assert) {
+  assert.plan(3)
+
+  var graph = bufferGraph()
+  graph.node('first', function (data, edge) {
+    edge('foo', Buffer.from('beep'), {
+      mime: 'text/plain',
+      array: ['array']
+    })
+
+    assert.equal(graph.data.first.foo.buffer + '', 'beep')
+    assert.equal(graph.data.first.foo.mime, 'text/plain')
+    assert.deepEqual(graph.data.first.foo.array, ['array'])
+  })
+
+  graph.start()
 })
